@@ -1,6 +1,6 @@
 {
-  "name": "myviteprojecttemplate",
-  "displayName": "MyViteProjectTemplate",
+  "name": "classschedule2calendar",
+  "displayName": "Class Schedule to Calendar",
   "uiSettings": {
     "navDrawer": {
       "modal": false,
