@@ -5,7 +5,7 @@ const timeTable =
     name: "Weekdays",
     days: [1, 2, 3, 4, 5],
     classes: [
-      { name: null, startsAt: [ 7, 15], endsAt: [ 7, 40] },
+      { name: null, startsAt: [ 7, 10], endsAt: [ 7, 40] },
       { name: null, startsAt: [ 7, 45], endsAt: [ 8, 25] },
       { name: null, startsAt: [ 8, 35], endsAt: [ 9, 15] },
       { name: null, startsAt: [ 9, 45], endsAt: [10, 25] },
