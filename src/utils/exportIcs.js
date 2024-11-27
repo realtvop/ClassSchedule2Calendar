@@ -1,13 +1,13 @@
 import { Calendar, Event } from "./ics.js";
 
-export function generateIcs(timeTable, classList) {
+export function generateIcs(classSchedule) {
     const cal = new Calendar();
 
-    for (const day in classList) {
-        if (!classList[day]) continue;
+    for (const day in classSchedule.classes) {
+        if (!classSchedule.classes[day]) continue;
 
-        for (const thisClass in classList[day]) {
-            const classTime = timeTable.classes[thisClass];
+        for (const thisClass in classSchedule.classes[day]) {
+            const classTime = classSchedule.timeTable.classes[thisClass];
 
             const dtStartDate = getDateOfWeekWithTime(
                 day,
@@ -22,12 +22,22 @@ export function generateIcs(timeTable, classList) {
                 uid: `${dtStartDate.toISOString()}@ClassSchedule`,
                 dtStartDate,
                 dtEndDate,
-                summary: classList[day][thisClass].subjects[0],
+                summary: classSchedule.getSubject(classSchedule.classes[day], classTime).name,
             })
         }
     }
 
     return cal.toICSString();
+}
+
+export function downloadIcs(classSchedule) {
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(new Blob([generateIcs(classSchedule)], { type: 'text/plain' }));
+    link.download = `fuck.ics`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
 }
 
 function getDateOfWeekWithTime(targetWeekday, time) {

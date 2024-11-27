@@ -2,65 +2,36 @@
 import packageInfo from "../package.json";
 import CSTable from './components/Table.vue';
 
-import { generateIcs } from "./utils/exportIcs.js";
-const timeTable =
-    {
-      name: "Weekdays",
-      days: [1, 2, 3, 4, 5],
-      classes: [
-        { name: null, startsAt: [ 7, 10], endsAt: [ 7, 40] },
-        { name: null, startsAt: [ 7, 45], endsAt: [ 8, 25] },
-        { name: null, startsAt: [ 8, 35], endsAt: [ 9, 15] },
-        { name: null, startsAt: [ 9, 45], endsAt: [10, 25] },
-        { name: null, startsAt: [10, 35], endsAt: [11, 15] },
-        { name: null, startsAt: [11, 25], endsAt: [12,  5] },
+import ClassSchedule from "./utils/classSchedule.js";
+import {downloadIcs, generateIcs} from "./utils/exportIcs.js";
 
-        { name: null, startsAt: [14, 10], endsAt: [14, 50] },
-        { name: null, startsAt: [15,  0], endsAt: [15, 40] },
-        { name: null, startsAt: [15, 55], endsAt: [16, 35] },
-        { name: null, startsAt: [16, 40], endsAt: [17, 20] },
+const classSchedule = new ClassSchedule({
+  subjects: {
+    chn: { name: "语文", teacher: null, location: null },
+    mth: { name: "数学", teacher: null, location: null },
+    eng: { name: "英语", teacher: null, location: null },
+    phy: { name: "物理", teacher: null, location: null },
+    chs: { name: "化学", teacher: null, location: null },
+    bio: { name: "生物", teacher: null, location: null },
+    geo: { name: "地理", teacher: null, location: null },
+    plt: { name: "政治", teacher: null, location: null },
+    his: { name: "历史", teacher: null, location: null },
+    ity: { name: "信息", teacher: null, location: null },
+    psy: { name: "心理", teacher: null, location: null },
+    phe: { name: "体育", teacher: null, location: null },
+    mus: { name: "音乐", teacher: null, location: null },
 
-        { name: null, startsAt: [18, 50], endsAt: [20, 20], default: "第一节晚自习" },
-        { name: null, startsAt: [20, 35], endsAt: [22, 10], default: "第二节晚自习" },
-      ]
-    };
-const classes = [
-  null,
-  [ { type: 0, subjects: ["英语早读"] }, { type: 0, subjects: ["语文"] }, { type: 0, subjects: ["物理"] }, { type: 0, subjects: ["数学"] }, { type: 0, subjects: ["英语"] }, { type: 0, subjects: ["音乐"] }, { type: 0, subjects: ["自习"] }, { type: 0, subjects: ["生物"] }, { type: 0, subjects: ["信息"] }, { type: 0, subjects: ["团队活动"] }, ],
-  [ { type: 0, subjects: ["语文早读"] }, { type: 0, subjects: ["英语"] }, { type: 0, subjects: ["语文"] }, { type: 0, subjects: ["数学"] }, { type: 0, subjects: ["数学"] }, { type: 0, subjects: ["体育"] }, { type: 0, subjects: ["历史"] }, { type: 0, subjects: ["地理"] }, { type: 0, subjects: ["化学"] }, { type: 0, subjects: ["物理测试"] }, ],
-]
-function getSubject(day, i) {
-  if (day[timeTable.classes.indexOf(i)]) return day[timeTable.classes.indexOf(i)].subjects[0];
-  return i.default;
-}
+    mthExam: { name: "数学周测", teacher: null, location: null },
+    phyExam: { name: "物理周测", teacher: null, location: null },
+
+    ss: { name: "自习", teacher: null, location: null },
+    td: { name: "团队活动", teacher: null, location: null },
+  },
+  defaultLocation: null,
+});
 
 function exportIcs() {
-  downloadTextFile("fuck.ics", generateIcs(timeTable, classes))
-}
-function downloadTextFile(filename, content) {
-  // 创建一个 Blob 对象，包含文本内容
-  const blob = new Blob([content], { type: 'text/plain' });
-
-  // 创建一个临时的 <a> 元素
-  const link = document.createElement('a');
-
-  // 使用 URL.createObjectURL 为 Blob 生成一个 URL
-  link.href = URL.createObjectURL(blob);
-
-  // 设置下载文件名
-  link.download = filename;
-
-  // 将 <a> 元素添加到页面中（隐形操作）
-  document.body.appendChild(link);
-
-  // 触发点击事件，下载文件
-  link.click();
-
-  // 移除临时 <a> 元素
-  document.body.removeChild(link);
-
-  // 释放 Blob URL
-  URL.revokeObjectURL(link.href);
+  downloadIcs(classSchedule);
 }
 
 </script>
@@ -83,7 +54,7 @@ function downloadTextFile(filename, content) {
       </mdui-top-app-bar>
 
       <mdui-layout-main>
-        <CSTable></CSTable>
+        <CSTable :classSchedule="classSchedule"></CSTable>
       </mdui-layout-main>
   </mdui-layout>
 </template>
