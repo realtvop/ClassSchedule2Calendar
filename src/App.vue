@@ -1,11 +1,14 @@
 <script setup>
+import { reactive } from 'vue';
+
 import packageInfo from "../package.json";
 import CSTable from './components/Table.vue';
 
 import ClassSchedule from "./utils/classSchedule.js";
-import {downloadIcs, generateIcs} from "./utils/exportIcs.js";
+import { downloadIcs, generateIcs } from "./utils/exportIcs.js";
+import ModifyClassInfoDialog from "./components/ModifyClassInfoDialog.vue";
 
-const classSchedule = new ClassSchedule({
+const classSchedule = reactive(new ClassSchedule({
   subjects: {
     chn: { name: "语文", teacher: null, location: null },
     mth: { name: "数学", teacher: null, location: null },
@@ -28,12 +31,15 @@ const classSchedule = new ClassSchedule({
     td: { name: "团队活动", teacher: null, location: null },
   },
   defaultLocation: null,
+}));
+
+const dialogData = reactive({
+  selectedClass: null,
 });
 
 function exportIcs() {
   downloadIcs(classSchedule);
 }
-
 </script>
 
 <template>
@@ -49,12 +55,13 @@ function exportIcs() {
 <!--          </mdui-top-app-bar-title>-->
           <div style="flex-grow: 1"></div>
           <mdui-button icon="download" @click="exportIcs">
-            Download ics file
+            下载 ics 文件
           </mdui-button>
       </mdui-top-app-bar>
 
       <mdui-layout-main>
-        <CSTable :classSchedule="classSchedule"></CSTable>
+        <CSTable :classSchedule :dialogData></CSTable>
+        <modify-class-info-dialog :classSchedule :selectedClass="dialogData.selectedClass" :dialogData></modify-class-info-dialog>
       </mdui-layout-main>
   </mdui-layout>
 </template>
