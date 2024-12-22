@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, watch } from 'vue';
+import { reactive, watch, ref } from 'vue';
 import ExportDialog from './components/ExportDialog.vue';
 
 import packageInfo from "../package.json";
@@ -70,12 +70,47 @@ const exportData = reactive({
   endDate: null
 });
 
+const importDialog = ref(null);
+
 function showExportDialog() {
   document.getElementById("exportDialog").open = true;
 }
 
 function handleExport(startDate, endDate) {
   downloadIcs(classSchedule, startDate, endDate);
+}
+
+// 显示导入确认对话框
+function showImportDialog() {
+  importDialog.value.open = true;
+}
+
+// 处理导入确认
+function handleImportConfirm() {
+  importDialog.value.open = false;
+  openImportFileDialog();
+}
+
+// 打开文件选择器
+async function openImportFileDialog() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json,.csv';
+  
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    try {
+      const newSchedule = await ClassSchedule.import(file);
+      Object.assign(classSchedule, newSchedule);
+      await saveSchedule();
+    } catch (error) {
+      alert('导入失败：无效的课程表文件');
+    }
+  };
+  
+  input.click();
 }
 
 async function saveSchedule() {
@@ -128,15 +163,15 @@ watch(
 created();
 
 // 导出课程表
-function exportSchedule() {
-  classSchedule.export();
+function exportSchedule(format) {
+  classSchedule.export(format);
 }
 
 // 导入课程表
 async function importSchedule() {
   const input = document.createElement('input');
   input.type = 'file';
-  input.accept = '.json';
+  input.accept = '.json,.csv';
   
   input.onchange = async (e) => {
     const file = e.target.files[0];
@@ -158,17 +193,24 @@ async function importSchedule() {
 <template>
   <mdui-layout style="position: fixed; left: 0; right: 0; top: 0; bottom: 0;">
       <mdui-top-app-bar order="1" scroll-behavior="elevate" style="user-select: none; -webkit-user-select: none;">
-            <div>
+            <div style="display: flex; align-items: center; gap: 8px;">
                 <mdui-top-app-bar-title>
                   {{ packageInfo.displayName }}
                 </mdui-top-app-bar-title>
+                <mdui-dropdown>
+                  <mdui-button slot="trigger" style="min-width: 0" variant="outlined">文件</mdui-button>
+                  <mdui-list>
+                    <mdui-list-item @click="showImportDialog">导入课程表</mdui-list-item>
+                    <mdui-divider></mdui-divider>
+                    <mdui-list-item @click="exportSchedule('json')">导出为 JSON (推荐 包含所有设置)</mdui-list-item>
+                    <mdui-list-item @click="exportSchedule('csv')">导出为 CSV</mdui-list-item>
+                  </mdui-list>
+                </mdui-dropdown>
             </div>
-          <div style="flex-grow: 1"></div>
-          <mdui-button-icon icon="upload" @click="importSchedule" title="导入课程表"></mdui-button-icon>
-          <mdui-button-icon icon="save" @click="exportSchedule" title="导出课程表"></mdui-button-icon>
-          <mdui-button icon="download" @click="showExportDialog">
-            下载 ics 文件
-          </mdui-button>
+            <div style="flex-grow: 1"></div>
+            <mdui-button icon="download" @click="showExportDialog">
+              下载 ics 文件
+            </mdui-button>
       </mdui-top-app-bar>
 
       <mdui-layout-main>
@@ -187,6 +229,22 @@ async function importSchedule() {
           :dialogData="dialogData"
         ></modify-time-dialog>
         <export-dialog :exportData="exportData" :onExport="handleExport"></export-dialog>
+
+        <!-- 导入确认对话框 -->
+        <mdui-dialog
+          ref="importDialog"
+          close-on-overlay-click
+          headline="导入课程表"
+        >
+          <div style="padding: 20px;">
+            <p>导入新的课程表将会覆盖当前的课程表。建议您先导出当前课程表以备份。</p>
+            <p>是否继续导入？</p>
+          </div>
+
+          <mdui-button slot="action" variant="text" @click="importDialog.open = false">取消</mdui-button>
+          <mdui-button slot="action" variant="text" @click="exportSchedule('json')">导出备份</mdui-button>
+          <mdui-button slot="action" variant="filled" @click="handleImportConfirm">继续导入</mdui-button>
+        </mdui-dialog>
       </mdui-layout-main>
   </mdui-layout>
 </template>
