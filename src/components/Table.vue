@@ -22,6 +22,11 @@ function formatTime([hours, minutes]) {
 function openTimeManageDialog() {
   props.dialogData.selectedTime = {};
 }
+
+// 检查某天是否启用
+function isDayEnabled(day) {
+  return props.classSchedule.timeTable.days.includes(day);
+}
 </script>
 
 <template>
@@ -42,11 +47,12 @@ function openTimeManageDialog() {
         {{ index + 1 }}
       </mdui-list-subheader>
     </mdui-list>
-    <mdui-list v-for="(day, di) in props.classSchedule.classes">
-      <div v-if="day">
+    <mdui-list v-for="(day, di) in props.classSchedule.classes" :key="di">
+      <div v-if="day && isDayEnabled(di)">
         <mdui-list-subheader>{{ days[di] }}</mdui-list-subheader>
         <mdui-list-item 
           v-for="(i, ci) in props.classSchedule.timeTable.classes" 
+          :key="ci"
           @click='openDialog([di, ci, JSON.parse(JSON.stringify(day[ci]))])'
         >
           {{ props.classSchedule.getSubject(day, i).name }}
@@ -61,10 +67,6 @@ function openTimeManageDialog() {
   display: flex;
   flex-direction: row;
   justify-content: center;
-}
-
-.tableContainer > mdui-list {
-  width: max-content;
 }
 
 /* 让所有列表项居中对齐 */
@@ -89,11 +91,7 @@ mdui-list-item {
   min-height: 48px;
 }
 
-.time-header mdui-button-icon {
-  cursor: pointer;
-}
-
-.time-header mdui-button-icon:hover {
-  background-color: var(--mdui-color-surface-container-highest);
+.day-disabled {
+  display: none;
 }
 </style>

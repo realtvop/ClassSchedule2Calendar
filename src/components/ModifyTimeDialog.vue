@@ -95,9 +95,9 @@ function removeClassTime(index) {
   // 删除时间表中的时间段
   props.classSchedule.timeTable.classes.splice(index, 1);
   
-  // 更新所有星期的课程数组
-  props.classSchedule.timeTable.days.forEach(day => {
-    if (props.classSchedule.classes[day].length > index) {
+  // 更新所有星期的课程数组，包括被禁用的星期
+  Object.keys(props.classSchedule.classes).forEach(day => {
+    if (props.classSchedule.classes[day] && props.classSchedule.classes[day].length > index) {
       props.classSchedule.classes[day].splice(index, 1);
     }
   });
@@ -127,19 +127,20 @@ function toggleDay(day) {
     const index = props.classSchedule.timeTable.days.indexOf(day);
     if (index !== -1) {
       props.classSchedule.timeTable.days.splice(index, 1);
-      // 完全移除该天的数据
-      props.classSchedule.classes[day] = null;
+      // 不删除数据，只是不显示
     }
   } else {
     // 如果已禁用，则启用
     props.classSchedule.timeTable.days.push(day);
-    // 添加新的课程数据
-    props.classSchedule.classes[day] = Array(props.classSchedule.timeTable.classes.length)
-      .fill(null)
-      .map(() => ({
-        type: 0,
-        subjects: ["ss"]
-      }));
+    // 如果没有课程数据，则初始化
+    if (!props.classSchedule.classes[day]) {
+      props.classSchedule.classes[day] = Array(props.classSchedule.timeTable.classes.length)
+        .fill(null)
+        .map(() => ({
+          type: 0,
+          subjects: ["ss"]
+        }));
+    }
     props.classSchedule.timeTable.days.sort((a, b) => a - b);
   }
 }
@@ -274,14 +275,15 @@ function handleAddClass() {
     endsAt: endTime
   });
 
-  // 更新所有星期的课程数组
-  props.classSchedule.timeTable.days.forEach(day => {
-    if (props.classSchedule.classes[day]) {
-      props.classSchedule.classes[day].push({
-        type: 0,
-        subjects: ["ss"] // 默认为自习
-      });
+  // 更新所有星期的课程数组，包括被禁用的星期
+  Object.keys(props.classSchedule.classes).forEach(day => {
+    if (!props.classSchedule.classes[day]) {
+      props.classSchedule.classes[day] = [];
     }
+    props.classSchedule.classes[day].push({
+      type: 0,
+      subjects: ["ss"] // 默认为自习
+    });
   });
 
   // 关闭对话框
@@ -337,10 +339,10 @@ function closeNewClassDialog() {
     </mdui-top-app-bar>
 
     <div class="dialog-content">
-      <!-- 星期管理 -->
+      <!-- 工作日管理 -->
       <div class="section">
         <div class="section-header">
-          <h3>星期管理</h3>
+          <h3>工作日管理</h3>
         </div>
         <div class="days-list">
           <mdui-chip 
@@ -402,27 +404,22 @@ function closeNewClassDialog() {
   <mdui-dialog
     ref="deleteDialog"
     close-on-overlay-click
+    :headline="deleteConfirm.type === 'day' ? 
+      `确定要删除${days[deleteConfirm.day]}吗？` : 
+      `确定要删除第 ${deleteConfirm.index + 1} 节课时间段吗？`"
     @close="closeDeleteConfirm"
   >
-    <mdui-top-app-bar slot="header">
-      <mdui-button-icon icon="close" @click="closeDeleteConfirm"></mdui-button-icon>
-      <mdui-top-app-bar-title>确认删除</mdui-top-app-bar-title>
-      <mdui-button 
-        variant="text" 
-        @click="handleDeleteConfirm"
-      >
-        删除
-      </mdui-button>
-    </mdui-top-app-bar>
-
     <div class="dialog-content">
       <p v-if="deleteConfirm.type === 'day'">
-        确定要删除 {{ days[deleteConfirm.day] }} 吗？删除后该天的所有课程安排都将被清除。
+        删除后该工作日的课程安排将被隐藏，但数据会被保留。
       </p>
       <p v-else-if="deleteConfirm.type === 'class'">
-        确定要删除第 {{ deleteConfirm.index + 1 }} 节课时间段吗？删除后所有星期该时段的课程都将被清除。
+        删除后所有该时段的课程都将被清除。
       </p>
     </div>
+
+    <mdui-button slot="action" variant="text" @click="closeDeleteConfirm">取消</mdui-button>
+    <mdui-button slot="action" variant="tonal" @click="handleDeleteConfirm">删除</mdui-button>
   </mdui-dialog>
 
   <!-- 添加新课程时间对话框 -->
