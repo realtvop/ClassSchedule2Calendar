@@ -1,5 +1,6 @@
 <script setup>
 import { reactive } from 'vue';
+import ExportDialog from './components/ExportDialog.vue';
 
 import packageInfo from "../package.json";
 import CSTable from './components/Table.vue';
@@ -61,8 +62,17 @@ const dialogData = reactive({
   selectedClass: null,
 });
 
-function exportIcs() {
-  downloadIcs(classSchedule);
+const exportData = reactive({
+  startDate: null,
+  endDate: null
+});
+
+function showExportDialog() {
+  document.getElementById("exportDialog").open = true;
+}
+
+function handleExport(startDate, endDate) {
+  downloadIcs(classSchedule, startDate, endDate);
 }
 </script>
 
@@ -74,11 +84,8 @@ function exportIcs() {
                   {{ packageInfo.displayName }}
                 </mdui-top-app-bar-title>
             </div>
-<!--          <mdui-top-app-bar-title style="font-weight: 350;">-->
-<!--                  Edit-->
-<!--          </mdui-top-app-bar-title>-->
           <div style="flex-grow: 1"></div>
-          <mdui-button icon="download" @click="exportIcs">
+          <mdui-button icon="download" @click="showExportDialog">
             下载 ics 文件
           </mdui-button>
       </mdui-top-app-bar>
@@ -86,6 +93,7 @@ function exportIcs() {
       <mdui-layout-main>
         <CSTable :classSchedule :dialogData></CSTable>
         <modify-class-info-dialog :classSchedule :selectedClass="dialogData.selectedClass" :dialogData></modify-class-info-dialog>
+        <export-dialog :exportData="exportData" :onExport="handleExport"></export-dialog>
       </mdui-layout-main>
   </mdui-layout>
 </template>

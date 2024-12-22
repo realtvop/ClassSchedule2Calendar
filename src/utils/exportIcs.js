@@ -1,7 +1,31 @@
-import { Calendar, Event } from "./ics.js";
+import { Calendar } from "./ics.js";
 
-export function generateIcs(classSchedule) {
+function getCurrentWeekDates() {
+    const now = new Date();
+    const currentDay = now.getDay();
+    
+    const startDate = new Date(now);
+    startDate.setDate(now.getDate() - currentDay + 1);
+    startDate.setHours(0, 0, 0, 0);
+    
+    const endDate = new Date(now);
+    endDate.setDate(now.getDate() - currentDay + 6);
+    endDate.setHours(23, 59, 59, 999);
+    
+    return { startDate, endDate };
+}
+
+export function generateIcs(classSchedule, startDate, endDate) {
     const cal = new Calendar();
+    
+    if (!startDate && !endDate) {
+        const { startDate: weekStart, endDate: weekEnd } = getCurrentWeekDates();
+        startDate = weekStart;
+        endDate = weekEnd;
+    }
+    
+    const startTime = startDate ? startDate.getTime() : 0;
+    const endTime = endDate ? endDate.getTime() : Infinity;
 
     for (const day in classSchedule.classes) {
         if (!classSchedule.classes[day]) continue;
@@ -13,6 +37,11 @@ export function generateIcs(classSchedule) {
                 day,
                 classTime.startsAt,
             );
+            
+            if (dtStartDate.getTime() < startTime || dtStartDate.getTime() > endTime) {
+                continue;
+            }
+
             const dtEndDate = getDateOfWeekWithTime(
                 day,
                 classTime.endsAt,
@@ -30,10 +59,15 @@ export function generateIcs(classSchedule) {
     return cal.toICSString();
 }
 
-export function downloadIcs(classSchedule) {
+export function downloadIcs(classSchedule, startDate, endDate) {
+    const formatDate = date => date.toISOString().split('T')[0];
+    const fileName = startDate && endDate ? 
+        `课程表_${formatDate(startDate)}_${formatDate(endDate)}.ics` : 
+        `课程表_本周.ics`;
+        
     const link = document.createElement('a');
-    link.href = URL.createObjectURL(new Blob([generateIcs(classSchedule)], { type: 'text/plain' }));
-    link.download = `fuck.ics`;
+    link.href = URL.createObjectURL(new Blob([generateIcs(classSchedule, startDate, endDate)], { type: 'text/plain' }));
+    link.download = fileName;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
