@@ -199,12 +199,12 @@ async function importSchedule() {
                 </mdui-top-app-bar-title>
                 <mdui-dropdown>
                   <mdui-button slot="trigger" style="min-width: 0" variant="outlined">文件</mdui-button>
-                  <mdui-list>
-                    <mdui-list-item @click="showImportDialog">导入课程表</mdui-list-item>
+                  <mdui-menu>
+                    <mdui-menu-item @click="showImportDialog">导入课程表</mdui-menu-item>
                     <mdui-divider></mdui-divider>
-                    <mdui-list-item @click="exportSchedule('json')">导出为 JSON (推荐 包含所有设置)</mdui-list-item>
+                    <mdui-list-item @click="exportSchedule('json')">导出为 JSON (包含所有设置)</mdui-list-item>
                     <mdui-list-item @click="exportSchedule('csv')">导出为 CSV</mdui-list-item>
-                  </mdui-list>
+                  </mdui-menu>
                 </mdui-dropdown>
             </div>
             <div style="flex-grow: 1"></div>
