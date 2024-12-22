@@ -126,6 +126,33 @@ watch(
 );
 
 created();
+
+// 导出课程表
+function exportSchedule() {
+  classSchedule.export();
+}
+
+// 导入课程表
+async function importSchedule() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    try {
+      const newSchedule = await ClassSchedule.import(file);
+      Object.assign(classSchedule, newSchedule);
+      await saveSchedule();
+    } catch (error) {
+      alert('导入失败：无效的课程表文件');
+    }
+  };
+  
+  input.click();
+}
 </script>
 
 <template>
@@ -137,6 +164,8 @@ created();
                 </mdui-top-app-bar-title>
             </div>
           <div style="flex-grow: 1"></div>
+          <mdui-button-icon icon="upload" @click="importSchedule" title="导入课程表"></mdui-button-icon>
+          <mdui-button-icon icon="save" @click="exportSchedule" title="导出课程表"></mdui-button-icon>
           <mdui-button icon="download" @click="showExportDialog">
             下载 ics 文件
           </mdui-button>

@@ -21,4 +21,39 @@ export default class ClassSchedule {
             defaultLocation: this.defaultLocation
         }, null, 2);
     }
+
+    // 导出课程表到文件
+    export() {
+        const blob = new Blob([this.toJSON()], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'class_schedule.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    // 从文件导入课程表
+    static async import(file) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    if (data.timeTable && data.classes && data.subjects) {
+                        resolve(new ClassSchedule(data));
+                    } else {
+                        reject(new Error('Invalid schedule format'));
+                    }
+                } catch (error) {
+                    reject(error);
+                }
+            };
+            reader.onerror = () => reject(new Error('Failed to read file'));
+            reader.readAsText(file);
+        });
+    }
 }

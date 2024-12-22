@@ -317,6 +317,35 @@ function closeConflictDialog() {
 function closeNewClassDialog() {
   newClassDialog.value.open = false;
 }
+
+// 导出课程表
+function exportSchedule() {
+  props.classSchedule.export();
+}
+
+// 导入课程表
+async function importSchedule() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.json';
+  
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    try {
+      const newSchedule = await props.classSchedule.constructor.import(file);
+      props.classSchedule.timeTable = newSchedule.timeTable;
+      props.classSchedule.classes = newSchedule.classes;
+      props.classSchedule.subjects = newSchedule.subjects;
+      props.classSchedule.defaultLocation = newSchedule.defaultLocation;
+    } catch (error) {
+      alert('导入失败：无效的课程表文件');
+    }
+  };
+  
+  input.click();
+}
 </script>
 
 <template>
