@@ -1,22 +1,56 @@
 <script setup>
 const days = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
 
-function openDialog(thisClass, that) {
-  that.$attrs.dialogData.selectedClass = thisClass;
+const props = defineProps({
+  classSchedule: Object,
+  dialogData: Object
+});
+
+function openDialog(thisClass) {
+  props.dialogData.selectedClass = thisClass;
   document.getElementById("modifyDialog").open = true;
+}
+
+function handleTimeClick(time, index) {
+  props.dialogData.selectedTime = time;
+}
+
+function formatTime([hours, minutes]) {
+  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+}
+
+function openTimeManageDialog() {
+  props.dialogData.selectedTime = {};
 }
 </script>
 
 <template>
   <div class="tableContainer">
     <mdui-list>
-      <mdui-list-subheader></mdui-list-subheader>
-      <mdui-list-subheader v-for="thisClass in $attrs.classSchedule.timeTable.classes">{{ thisClass.name || ($attrs.classSchedule.timeTable.classes.indexOf(thisClass) + 1) }}</mdui-list-subheader>
+      <mdui-list-subheader class="time-header">
+        <mdui-button-icon 
+          icon="schedule" 
+          @click="openTimeManageDialog"
+          title="管理课程时间"
+        ></mdui-button-icon>
+      </mdui-list-subheader>
+      <mdui-list-subheader 
+        v-for="(time, index) in props.classSchedule.timeTable.classes"
+        :key="index"
+        class="time-cell"
+      >
+        {{ index + 1 }}
+      </mdui-list-subheader>
     </mdui-list>
-    <mdui-list v-for="(day, di) in $attrs.classSchedule.classes">
+    <mdui-list v-for="(day, di) in props.classSchedule.classes">
       <div v-if="day">
         <mdui-list-subheader>{{ days[di] }}</mdui-list-subheader>
-        <mdui-list-item v-for="(i, ci) in $attrs.classSchedule.timeTable.classes" @click='openDialog([di, ci, JSON.parse(JSON.stringify(day[ci]))], this)'>{{ $attrs.classSchedule.getSubject(day, i).name }}</mdui-list-item>
+        <mdui-list-item 
+          v-for="(i, ci) in props.classSchedule.timeTable.classes" 
+          @click='openDialog([di, ci, JSON.parse(JSON.stringify(day[ci]))])'
+        >
+          {{ props.classSchedule.getSubject(day, i).name }}
+        </mdui-list-item>
       </div>
     </mdui-list>
   </div>
@@ -28,7 +62,38 @@ function openDialog(thisClass, that) {
   flex-direction: row;
   justify-content: center;
 }
+
 .tableContainer > mdui-list {
   width: max-content;
+}
+
+/* 让所有列表项居中对齐 */
+mdui-list-subheader,
+mdui-list-item {
+  text-align: center;
+  justify-content: center;
+}
+
+.time-cell {
+  cursor: pointer;
+}
+
+.time-cell:hover {
+  background-color: var(--mdui-color-surface-container-highest);
+}
+
+.time-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 48px;
+}
+
+.time-header mdui-button-icon {
+  cursor: pointer;
+}
+
+.time-header mdui-button-icon:hover {
+  background-color: var(--mdui-color-surface-container-highest);
 }
 </style>

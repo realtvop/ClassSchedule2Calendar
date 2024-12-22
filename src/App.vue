@@ -9,6 +9,7 @@ import ClassSchedule from "./utils/classSchedule.js";
 import { downloadIcs, generateIcs } from "./utils/exportIcs.js";
 import ModifyClassInfoDialog from "./components/ModifyClassInfoDialog.vue";
 import ScheduleDB from './utils/db';
+import ModifyTimeDialog from './components/ModifyTimeDialog.vue';
 
 const MY_CONFIG = `{
     "subjects": {
@@ -61,6 +62,7 @@ const classSchedule = reactive(new ClassSchedule(MY_CONFIG));
 
 const dialogData = reactive({
   selectedClass: null,
+  selectedTime: null
 });
 
 const exportData = reactive({
@@ -141,8 +143,20 @@ created();
       </mdui-top-app-bar>
 
       <mdui-layout-main>
-        <CSTable :classSchedule :dialogData></CSTable>
-        <modify-class-info-dialog :classSchedule :selectedClass="dialogData.selectedClass" :dialogData></modify-class-info-dialog>
+        <CSTable 
+          :classSchedule="classSchedule" 
+          :dialogData="dialogData"
+        ></CSTable>
+        <modify-class-info-dialog 
+          :classSchedule="classSchedule" 
+          :selectedClass="dialogData.selectedClass" 
+          :dialogData="dialogData"
+        ></modify-class-info-dialog>
+        <modify-time-dialog
+          :classSchedule="classSchedule"
+          :selectedTime="dialogData.selectedTime"
+          :dialogData="dialogData"
+        ></modify-time-dialog>
         <export-dialog :exportData="exportData" :onExport="handleExport"></export-dialog>
       </mdui-layout-main>
   </mdui-layout>
