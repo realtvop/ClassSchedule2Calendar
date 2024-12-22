@@ -76,14 +76,6 @@ mdui-list-item {
   justify-content: center;
 }
 
-.time-cell {
-  cursor: pointer;
-}
-
-.time-cell:hover {
-  background-color: var(--mdui-color-surface-container-highest);
-}
-
 .time-header {
   display: flex;
   justify-content: center;
