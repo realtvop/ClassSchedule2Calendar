@@ -8,30 +8,54 @@ import ClassSchedule from "./utils/classSchedule.js";
 import { downloadIcs, generateIcs } from "./utils/exportIcs.js";
 import ModifyClassInfoDialog from "./components/ModifyClassInfoDialog.vue";
 
-const classSchedule = reactive(new ClassSchedule({
-  subjects: {
-    chn: { name: "语文", teacher: null, location: null },
-    mth: { name: "数学", teacher: null, location: null },
-    eng: { name: "英语", teacher: null, location: null },
-    phy: { name: "物理", teacher: null, location: null },
-    chs: { name: "化学", teacher: null, location: null },
-    bio: { name: "生物", teacher: null, location: null },
-    geo: { name: "地理", teacher: null, location: null },
-    plt: { name: "政治", teacher: null, location: null },
-    his: { name: "历史", teacher: null, location: null },
-    ity: { name: "信息", teacher: null, location: null },
-    psy: { name: "心理", teacher: null, location: null },
-    phe: { name: "体育", teacher: null, location: null },
-    mus: { name: "音乐", teacher: null, location: null },
+const MY_CONFIG = `{
+    "subjects": {
+        "chn": { "name": "语文", "teacher": null, "location": null },
+        "mth": { "name": "数学", "teacher": null, "location": null },
+        "eng": { "name": "英语", "teacher": null, "location": null },
+        "phy": { "name": "物理", "teacher": null, "location": null },
+        "chs": { "name": "化学", "teacher": null, "location": null },
+        "bio": { "name": "生物", "teacher": null, "location": null },
+        "geo": { "name": "地理", "teacher": null, "location": null },
+        "plt": { "name": "政治", "teacher": null, "location": null },
+        "his": { "name": "历史", "teacher": null, "location": null },
+        "ity": { "name": "信息", "teacher": null, "location": null },
+        "psy": { "name": "心理", "teacher": null, "location": null },
+        "phe": { "name": "体育", "teacher": null, "location": null },
+        "mus": { "name": "音乐", "teacher": null, "location": null },
+        "mthExam": { "name": "数学周测", "teacher": null, "location": null },
+        "phyExam": { "name": "物理周测", "teacher": null, "location": null },
+        "ss": { "name": "自习", "teacher": null, "location": null },
+        "td": { "name": "团队活动", "teacher": null, "location": null }
+    },
+    "defaultLocation": null,
+    "timeTable": {
+        "name": "Weekdays",
+        "days": [1, 2, 3, 4, 5],
+        "classes": [
+            { "name": null, "startsAt": [ 7, 10], "endsAt": [ 7, 40] },
+            { "name": null, "startsAt": [ 7, 45], "endsAt": [ 8, 25] },
+            { "name": null, "startsAt": [ 8, 35], "endsAt": [ 9, 15] },
+            { "name": null, "startsAt": [ 9, 45], "endsAt": [10, 25] },
+            { "name": null, "startsAt": [10, 35], "endsAt": [11, 15] },
+            { "name": null, "startsAt": [11, 25], "endsAt": [12,  5] },
+            { "name": null, "startsAt": [14, 10], "endsAt": [14, 50] },
+            { "name": null, "startsAt": [15,  0], "endsAt": [15, 40] },
+            { "name": null, "startsAt": [15, 55], "endsAt": [16, 35] },
+            { "name": null, "startsAt": [16, 40], "endsAt": [17, 20] }
+        ]
+    },
+    "classes": [
+        null,
+        [ { "type": 0, "subjects": ["eng"] }, { "type": 0, "subjects": ["chn"] }, { "type": 0, "subjects": ["phy"] }, { "type": 0, "subjects": ["mth"] }, { "type": 0, "subjects": ["eng"] }, { "type": 0, "subjects": ["mus"] }, { "type": 0, "subjects": ["ss"] }, { "type": 0, "subjects": ["bio"] }, { "type": 0, "subjects": ["ity"] }, { "type": 0, "subjects": ["td"] } ],
+        [ { "type": 0, "subjects": ["chn"] }, { "type": 0, "subjects": ["eng"] }, { "type": 0, "subjects": ["chn"] }, { "type": 0, "subjects": ["mth"] }, { "type": 0, "subjects": ["mth"] }, { "type": 0, "subjects": ["phe"] }, { "type": 0, "subjects": ["his"] }, { "type": 0, "subjects": ["geo"] }, { "type": 0, "subjects": ["chs"] }, { "type": 0, "subjects": ["phyExam"] } ],
+        [ { "type": 0, "subjects": ["eng"] }, { "type": 0, "subjects": ["chs"] }, { "type": 0, "subjects": ["chn"] }, { "type": 0, "subjects": ["mth"] }, { "type": 0, "subjects": ["mth"] }, { "type": 0, "subjects": ["phe"] }, { "type": 0, "subjects": ["his"] }, { "type": 0, "subjects": ["geo"] }, { "type": 0, "subjects": ["chs"] }, { "type": 0, "subjects": ["phyExam"] } ],
+        [ { "type": 0, "subjects": ["chn"] }, { "type": 0, "subjects": ["eng"] }, { "type": 0, "subjects": ["chn"] }, { "type": 0, "subjects": ["mth"] }, { "type": 0, "subjects": ["mth"] }, { "type": 0, "subjects": ["phe"] }, { "type": 0, "subjects": ["his"] }, { "type": 0, "subjects": ["geo"] }, { "type": 0, "subjects": ["chs"] }, { "type": 0, "subjects": ["phyExam"] } ],
+        [ { "type": 0, "subjects": ["eng"] }, { "type": 0, "subjects": ["eng"] }, { "type": 0, "subjects": ["chn"] }, { "type": 0, "subjects": ["mth"] }, { "type": 0, "subjects": ["mth"] }, { "type": 0, "subjects": ["phe"] }, { "type": 0, "subjects": ["his"] }, { "type": 0, "subjects": ["geo"] }, { "type": 0, "subjects": ["chs"] }, { "type": 0, "subjects": ["phyExam"] } ]
+    ]
+}`;
 
-    mthExam: { name: "数学周测", teacher: null, location: null },
-    phyExam: { name: "物理周测", teacher: null, location: null },
-
-    ss: { name: "自习", teacher: null, location: null },
-    td: { name: "团队活动", teacher: null, location: null },
-  },
-  defaultLocation: null,
-}));
+const classSchedule = reactive(new ClassSchedule(MY_CONFIG));
 
 const dialogData = reactive({
   selectedClass: null,
