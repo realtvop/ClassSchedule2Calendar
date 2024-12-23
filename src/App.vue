@@ -10,6 +10,7 @@ import { downloadIcs, generateIcs } from "./utils/exportIcs.js";
 import ModifyClassInfoDialog from "./components/ModifyClassInfoDialog.vue";
 import ScheduleDB from './utils/db';
 import ModifyTimeDialog from './components/ModifyTimeDialog.vue';
+import SettingsDialog from './components/SettingsDialog.vue';
 
 const MY_CONFIG = `{
     "subjects": {
@@ -55,14 +56,25 @@ const MY_CONFIG = `{
         [ { "type": 0, "subjects": ["eng"] }, { "type": 0, "subjects": ["chs"] }, { "type": 0, "subjects": ["chn"] }, { "type": 0, "subjects": ["mth"] }, { "type": 0, "subjects": ["mth"] }, { "type": 0, "subjects": ["phe"] }, { "type": 0, "subjects": ["his"] }, { "type": 0, "subjects": ["geo"] }, { "type": 0, "subjects": ["chs"] }, { "type": 0, "subjects": ["phyExam"] } ],
         [ { "type": 0, "subjects": ["chn"] }, { "type": 0, "subjects": ["eng"] }, { "type": 0, "subjects": ["chn"] }, { "type": 0, "subjects": ["mth"] }, { "type": 0, "subjects": ["mth"] }, { "type": 0, "subjects": ["phe"] }, { "type": 0, "subjects": ["his"] }, { "type": 0, "subjects": ["geo"] }, { "type": 0, "subjects": ["chs"] }, { "type": 0, "subjects": ["phyExam"] } ],
         [ { "type": 0, "subjects": ["eng"] }, { "type": 0, "subjects": ["eng"] }, { "type": 0, "subjects": ["chn"] }, { "type": 0, "subjects": ["mth"] }, { "type": 0, "subjects": ["mth"] }, { "type": 0, "subjects": ["phe"] }, { "type": 0, "subjects": ["his"] }, { "type": 0, "subjects": ["geo"] }, { "type": 0, "subjects": ["chs"] }, { "type": 0, "subjects": ["phyExam"] } ]
-    ]
+    ],
+    "settings": {
+        "beforeClass": {
+            "enabled": false,
+            "minutes": 5
+        },
+        "afterClass": {
+            "enabled": false,
+            "minutes": 5
+        }
+    }
 }`;
 
 const classSchedule = reactive(new ClassSchedule(MY_CONFIG));
 
 const dialogData = reactive({
   selectedClass: null,
-  selectedTime: null
+  selectedTime: null,
+  selectedSettings: null
 });
 
 const exportData = reactive({
@@ -71,6 +83,7 @@ const exportData = reactive({
 });
 
 const importDialog = ref(null);
+const settingsDialog = ref(null);
 
 function showExportDialog() {
   document.getElementById("exportDialog").open = true;
@@ -188,6 +201,10 @@ async function importSchedule() {
   
   input.click();
 }
+
+function showSettingsDialog() {
+  settingsDialog.value.showDialog();
+}
 </script>
 
 <template>
@@ -206,6 +223,7 @@ async function importSchedule() {
                     <mdui-menu-item @click="exportSchedule('csv')">导出为 CSV</mdui-menu-item>
                   </mdui-menu>
                 </mdui-dropdown>
+                <mdui-button-icon icon="settings" @click="showSettingsDialog"></mdui-button-icon>
             </div>
             <div style="flex-grow: 1"></div>
             <mdui-button icon="download" @click="showExportDialog">
@@ -245,6 +263,8 @@ async function importSchedule() {
           <mdui-button slot="action" variant="text" @click="exportSchedule('json')">导出备份</mdui-button>
           <mdui-button slot="action" variant="filled" @click="handleImportConfirm">继续导入</mdui-button>
         </mdui-dialog>
+
+        <SettingsDialog ref="settingsDialog" :dialogData="dialogData" :classSchedule="classSchedule"></SettingsDialog>
       </mdui-layout-main>
   </mdui-layout>
 </template>

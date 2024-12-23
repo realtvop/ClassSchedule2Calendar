@@ -5,6 +5,7 @@ export default class ClassSchedule {
         this.timeTable = data.timeTable;
         this.classes = data.classes;
         this.defaultLocation = data.defaultLocation;
+        this.settings = data.settings;
     }
     
     getSubject(day, i) {
@@ -18,7 +19,8 @@ export default class ClassSchedule {
             subjects: this.subjects,
             timeTable: this.timeTable,
             classes: this.classes,
-            defaultLocation: this.defaultLocation
+            defaultLocation: this.defaultLocation,
+            settings: this.settings
         }, null, 2);
     }
 
