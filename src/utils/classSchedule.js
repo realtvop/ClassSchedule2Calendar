@@ -3,6 +3,20 @@ export default class ClassSchedule {
         const data = typeof config === 'string' ? JSON.parse(config) : config;
         this.subjects = data.subjects;
         this.timeTable = data.timeTable;
+        
+        // 确保每个课程时间段都有 duration
+        if (this.timeTable && this.timeTable.classes) {
+            this.timeTable.classes = this.timeTable.classes.map(classTime => {
+                if (!classTime.duration && classTime.endsAt) {
+                    // 计算持续时间（分钟）
+                    const startMinutes = classTime.startsAt[0] * 60 + classTime.startsAt[1];
+                    const endMinutes = classTime.endsAt[0] * 60 + classTime.endsAt[1];
+                    classTime.duration = endMinutes - startMinutes;
+                }
+                return classTime;
+            });
+        }
+        
         this.classes = data.classes;
         this.defaultLocation = data.defaultLocation;
         this.settings = data.settings;
@@ -44,7 +58,7 @@ export default class ClassSchedule {
     // 导出为CSV格式
     exportCSV() {
         // 生成CSV表头
-        let csv = '时间,';
+        let csv = '时间,持续分钟,';
         this.timeTable.days.forEach(day => {
             csv += `周${['日', '一', '二', '三', '四', '五', '六'][day]},`;
         });
@@ -52,8 +66,15 @@ export default class ClassSchedule {
 
         // 生成每节课的数据
         this.timeTable.classes.forEach((classTime, index) => {
-            // 添加时间
-            csv += `${this.formatTime(classTime.startsAt)}-${this.formatTime(classTime.endsAt)},`;
+            // 如果没有 duration，计算它
+            const duration = classTime.duration || (() => {
+                const startMinutes = classTime.startsAt[0] * 60 + classTime.startsAt[1];
+                const endMinutes = classTime.endsAt[0] * 60 + classTime.endsAt[1];
+                return endMinutes - startMinutes;
+            })();
+            
+            // 添加时间和持续时间
+            csv += `${this.formatTime(classTime.startsAt)},${duration},`;
             
             // 添加每天的课程
             this.timeTable.days.forEach(day => {
@@ -169,9 +190,10 @@ export default class ClassSchedule {
             if (cells.length < days.length + 1) continue;
 
             // 解析时间
-            const [timeStr, ...subjectCells] = cells;
-            const [startTime, endTime] = timeStr.split('-').map(t => t.trim());
-            if (!startTime || !endTime) continue;
+            const [timeStr, durationStr, ...subjectCells] = cells;
+            const startTime = timeStr.trim();
+            const duration = parseInt(durationStr);
+            if (!startTime || isNaN(duration)) continue;
 
             const parseTimeStr = (timeStr) => {
                 const [hours, minutes] = timeStr.split(':').map(Number);
@@ -179,13 +201,12 @@ export default class ClassSchedule {
             };
 
             const startsAt = parseTimeStr(startTime);
-            const endsAt = parseTimeStr(endTime);
 
             // 添加时间段
             timeTable.classes.push({
                 name: null,
-                startsAt,
-                endsAt
+                startsAt: startsAt,
+                duration
             });
 
             // 处理每天的课程
