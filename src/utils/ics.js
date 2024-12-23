@@ -32,11 +32,13 @@ export class Event {
         summary,
         dtStartDate,
         dtEndDate,
-                }) {
+        alarms = []
+    }) {
         this.uid = uid;
         this.summary = summary;
         this.dtStart = dtStartDate.toISOString().replaceAll("-", "").replaceAll(":",  "").slice(0, 15);
         this.dtEnd = dtEndDate.toISOString().replaceAll("-", "").replaceAll(":",  "").slice(0, 15);
+        this.alarms = alarms;
     }
     toICSString() {
         let result = "BEGIN:VEVENT";
@@ -44,8 +46,17 @@ export class Event {
         result += `\nSUMMARY:${this.summary}`;
         result += `\nDTSTART;TZID=UTC:${this.dtStart}`;
         result += `\nDTEND;TZID=UTC:${this.dtEnd}`;
+        
+        // Add alarms
+        for (const alarm of this.alarms) {
+            result += "\nBEGIN:VALARM";
+            result += "\nACTION:DISPLAY";
+            result += `\nDESCRIPTION:${alarm.description}`;
+            result += `\nTRIGGER:-PT${alarm.minutes}M`;
+            result += "\nEND:VALARM";
+        }
+        
         result += `\nEND:VEVENT`;
-
         return result;
     }
 }

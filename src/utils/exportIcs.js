@@ -27,7 +27,12 @@ export function generateIcs(classSchedule, startDate, endDate) {
     const startTime = startDate ? startDate.getTime() : 0;
     const endTime = endDate ? endDate.getTime() : Infinity;
 
+    // 获取启用的日期列表
+    const enabledDays = classSchedule.timeTable.days;
+
     for (const day in classSchedule.classes) {
+        // 跳过未启用的日期
+        if (!enabledDays.includes(Number(day))) continue;
         if (!classSchedule.classes[day]) continue;
 
         for (const thisClass in classSchedule.classes[day]) {
@@ -47,12 +52,32 @@ export function generateIcs(classSchedule, startDate, endDate) {
                 classTime.endsAt,
             );
 
+            const alarms = [];
+            const subject = classSchedule.getSubject(classSchedule.classes[day], classTime);
+
+            // 添加上课前提醒
+            if (classSchedule.settings?.beforeClass?.enabled) {
+                alarms.push({
+                    description: `即将上课：${subject.name}`,
+                    minutes: classSchedule.settings.beforeClass.minutes
+                });
+            }
+
+            // 添加下课提醒
+            if (classSchedule.settings?.afterClass?.enabled) {
+                alarms.push({
+                    description: `即将下课：${subject.name}`,
+                    minutes: classSchedule.settings.afterClass.minutes
+                });
+            }
+
             cal.appendNewEvent({
                 uid: `${dtStartDate.toISOString()}@ClassSchedule`,
                 dtStartDate,
                 dtEndDate,
-                summary: classSchedule.getSubject(classSchedule.classes[day], classTime).name,
-            })
+                summary: subject.name,
+                alarms
+            });
         }
     }
 
