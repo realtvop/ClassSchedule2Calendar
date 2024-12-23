@@ -52,7 +52,7 @@ export class Event {
             result += "\nBEGIN:VALARM";
             result += "\nACTION:DISPLAY";
             result += `\nDESCRIPTION:${alarm.description}`;
-            result += `\nTRIGGER:-PT${alarm.minutes}M`;
+            result += `\nTRIGGER:${alarm.trigger}`;
             result += "\nEND:VALARM";
         }
         

@@ -15,6 +15,32 @@ function getCurrentWeekDates() {
     return { startDate, endDate };
 }
 
+function createAlarms(settings, subject, duration) {
+    const alarms = [];
+    
+    // 添加上课前提醒
+    if (settings?.beforeClass?.enabled) {
+        const seconds = settings.beforeClass.minutes * 60;
+        alarms.push({
+            description: `即将上课：${subject.name}`,
+            trigger: `-PT${seconds}S`
+        });
+    }
+    
+    // 添加下课前提醒
+    if (settings?.afterClass?.enabled) {
+        const beforeEndMinutes = settings.afterClass.minutes;
+        const beforeStartMinutes = duration - beforeEndMinutes;
+        const seconds = beforeStartMinutes * 60;
+        alarms.push({
+            description: `即将下课：${subject.name}`,
+            trigger: `PT${seconds}S`
+        });
+    }
+    
+    return alarms;
+}
+
 export function generateIcs(classSchedule, startDate, endDate) {
     const cal = new Calendar();
     
@@ -52,24 +78,8 @@ export function generateIcs(classSchedule, startDate, endDate) {
                 classTime.endsAt,
             );
 
-            const alarms = [];
             const subject = classSchedule.getSubject(classSchedule.classes[day], classTime);
-
-            // 添加上课前提醒
-            if (classSchedule.settings?.beforeClass?.enabled) {
-                alarms.push({
-                    description: `即将上课：${subject.name}`,
-                    minutes: classSchedule.settings.beforeClass.minutes
-                });
-            }
-
-            // 添加下课提醒
-            if (classSchedule.settings?.afterClass?.enabled) {
-                alarms.push({
-                    description: `即将下课：${subject.name}`,
-                    minutes: classSchedule.settings.afterClass.minutes
-                });
-            }
+            const alarms = createAlarms(classSchedule.settings, subject, classTime.duration);
 
             cal.appendNewEvent({
                 uid: `${dtStartDate.toISOString()}@ClassSchedule`,
